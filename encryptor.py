@@ -47,7 +47,7 @@ def load_params():
     elif "--key-path" in sys.argv:
         pub_key_file = sys.argv[sys.argv.index("--key-path") + 1]
     else:
-        pub_key_file = input("Public key file: ")
+        pub_key_file = input("Public key file path: ")
 
     # Check if to generate session key
     if "-n" in sys.argv or "--no-session-key" in sys.argv:
