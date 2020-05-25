@@ -59,7 +59,7 @@ def main(**args):
         decrypted_file = private_key.decrypt(
             encrypted_file,
             padding.OAEP(
-                mfg=padding.MGF1(algorithm=hashes.SHA256()),
+                mgf=padding.MGF1(algorithm=hashes.SHA256()),
                 algorithm=hashes.SHA256(),
                 label=None
             )
@@ -75,7 +75,7 @@ def main(**args):
         decrypted_session_key = private_key.decrypt(
             encrypted_session_key,
             padding.OAEP(
-                mfg=padding.MGF1(algorithm=hashes.SHA256()),
+                mgf=padding.MGF1(algorithm=hashes.SHA256()),
                 algorithm=hashes.SHA256(),
                 label=None
             )
@@ -89,14 +89,14 @@ def main(**args):
     #TODO:  read 2 bytes (file_name_length) -> read file_name -> read file_length -> read file -> save file
 
     file_name_length = int.from_bytes(decrypted_file[0:2], "little", signed=False)
-    file_name = bytes(decrypted_file[2:file_name_length + 1]).decode()
+    file_name = bytes(decrypted_file[2:file_name_length + 2]).decode()
     if output_name == 0:
         output_name = file_name
 
     data_start_idx = 2 + file_name_length
-    data_length = int.from_bytes(decrypted_file[data_start_idx:data_start_idx + 2])
+    data_length = int.from_bytes(decrypted_file[data_start_idx:data_start_idx + 8], byteorder="little", signed=False)
 
-    data = bytes(decrypted_file[data_start_idx + 2:data_start_idx + data_length + 1])
+    data = bytes(decrypted_file[data_start_idx + 8:data_start_idx + data_length + 8])
     out = open(output_name, 'wb')
     out.write(data)
 
