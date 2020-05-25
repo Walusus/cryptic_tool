@@ -36,7 +36,7 @@ def main(**args):
     output_name = args['out']
 
     # loading the given private key, that's used to decrypt the session key
-    with open(key_path) as key_file:
+    with open(key_path, "rb") as key_file:
         private_key = serialization.load_pem_private_key(
             key_file.read(),
             password=None,
@@ -48,13 +48,14 @@ def main(**args):
     session_key_length = int.from_bytes(file.read(2), byteorder='little', signed=False) #first 2 bytes are the length of our session key
 
     # the rest of the file is metadata and the file itself that need to be decrypted
-    encrypted_file = file.read()
+
 
     if session_key_length != 0 and session_key_path != 0:
         print("Podano klucz sesji, mimo tego że klucz sesji jest podany w enkrypcji pliku! - koniec programu")
         return 0
 
     if session_key_length == 0 and session_key_path == 0:   # then we use the private key to decrypt the file
+        encrypted_file = file.read()
         decrypted_file = private_key.decrypt(
             encrypted_file,
             padding.OAEP(
@@ -79,7 +80,7 @@ def main(**args):
                 label=None
             )
         )
-
+        encrypted_file = file.read()
         # ---------------------- MOŻE ŹLE - zrzutować bajty na klucz?
         f = Fernet(decrypted_session_key)
         decrypted_file = f.decrypt(encrypted_file)
@@ -110,7 +111,7 @@ if __name__ == '__main__':
     #Example:
     parser = argparse.ArgumentParser()
     parser.add_argument('file-path')
-    parser.add_argument('-k', '--key-path', dist='key-path', type=str, default=0, required=False, help='Ścieżka do klucza prywatnego, używanego do deszyfrowania klucza sesyjnego lub danych. Jeżeli nie podano, użytkownik jest o nią poproszony w trakcie działania aplikacji.')
+    parser.add_argument('-k', '--key-path', dest='key-path', type=str, default=0, required=False, help='Ścieżka do klucza prywatnego, używanego do deszyfrowania klucza sesyjnego lub danych. Jeżeli nie podano, użytkownik jest o nią poproszony w trakcie działania aplikacji.')
     parser.add_argument('-s', '--session-key', dest='session-key', type=str, default=0, required=False, help="Ścieżka do klucza danych, używanego do deszyfrowania lub danych. Jeżeli w danych rozmiar klucza sesyjnego nie jest równy 0, a został podany ten argument, to wyświetlany jest błąd.")
     parser.add_argument('-o', '--out', type=str, default=0, required=False, help="Opcjonalna nazwa pliku wyjściowego. Jeżeli niezdefiniowana, plik otrzymuje pierwotną nazwę.")
     #parser.add_argument('-h', '--help', type=str, required=False, help="Path to file.") #???
