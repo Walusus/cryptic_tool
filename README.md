@@ -1,2 +1,2 @@
 # cryptict_tool
-Python 
+Python cryptography package wrapper made for studies.
