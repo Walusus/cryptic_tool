@@ -27,7 +27,6 @@ if __name__ == '__main__':
     parser.add_argument('-a','--algorithm', type=str, default="RSA", required=False, help="Encryption algorithm")
     parser.add_argument('-l', '--length', type=int, default=2048, required=False, help="Length of key used to encrypt.")
     parser.add_argument('-f','--file',type=str, required=True, help="Path to file.")
-    parser.add_argument()
     #Arguments for our little script
     #
     parser.set_defaults()
