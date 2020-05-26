@@ -120,8 +120,6 @@ if __name__ == '__main__':
     # to run python name.py --integer <integer value>
     # Example:
     parser = argparse.ArgumentParser(prog='generator', description='Info: \n Generuje klucz prywatny lub parę kluczy (prywatny i publiczny). Domyślnym wyjściem są pliki public.pem i private.pem.')
-
-
     parser = argparse.ArgumentParser(prog='Decryptor', description='Info: \n Decrypts the given file')
     parser.add_argument('file-path')
     parser.add_argument('-k', '--key-path', dest='key-path', type=str, default=0, required=False, help='Path to the private key')
