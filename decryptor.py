@@ -50,7 +50,7 @@ def main(**args):
         print("Error: Unable to open the given file to decrypt.")
         exit(1)
 
-    session_key_length = int.from_bytes(file.read(2), byteorder='little', signed=False) # first 2 bytes are the length of our session key
+    session_key_length = int.from_bytes(file.read(2), byteorder='little', signed=False)  # first 2 bytes are the length of our session key
 
     # the rest of the file is metadata and the file itself that need to be decrypted
 
@@ -89,6 +89,7 @@ def main(**args):
             )
         )
         encrypted_file = file.read()
+        file.close()
 
         f = Fernet(decrypted_session_key)
         decrypted_file = f.decrypt(encrypted_file)
@@ -104,15 +105,16 @@ def main(**args):
     data_length = int.from_bytes(decrypted_file[data_start_idx:data_start_idx + 8], byteorder="little", signed=False)
 
     data = bytes(decrypted_file[data_start_idx + 8:data_start_idx + data_length + 8])
-    out = open(output_name, 'wb')
-    out.write(data)
 
     if data_length != data.__sizeof__():
         print("Error: Data length is invalid - wrong key must've been used")
         exit(1)
     else:
-        file.close()
-        out.close()
+        try:
+            with open(output_name, 'wb') as out:
+                out.write(data)
+        except EnvironmentError:
+            print("Error: Unable to create output file")
 
 
 if __name__ == '__main__':
