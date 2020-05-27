@@ -31,6 +31,10 @@ def load_params():
         exit(0)
 
     # Get input file name
+    if len(sys.argv) is 1:
+        print("Error: No input file given")
+        exit(1)
+
     input_file = os.path.basename(sys.argv[-1])
 
     # Get output file name
@@ -93,7 +97,7 @@ if __name__ == '__main__':
     # Add metadata
     data = len(data).to_bytes(8, byteorder="little", signed=False) + data
     data = input_file.encode() + data
-    data = len(input_file.encode()).to_bytes(8, byteorder="little", signed=False) + data
+    data = len(input_file.encode()).to_bytes(2, byteorder="little", signed=False) + data
 
     # Generate session key if needed and encrypt data
     if not no_session_key:
@@ -120,14 +124,19 @@ if __name__ == '__main__':
     else:
         # Encrypt data
         enc_session_key = None
-        token = pub_key.encrypt(
-            data,
-            padding.OAEP(
-                mgf=padding.MGF1(algorithm=hashes.SHA256()),
-                algorithm=hashes.SHA256(),
-                label=None
+        try:
+            token = pub_key.encrypt(
+                data,
+                padding.OAEP(
+                    mgf=padding.MGF1(algorithm=hashes.SHA256()),
+                    algorithm=hashes.SHA256(),
+                    label=None
+                )
             )
-        )
+        except ValueError:
+            print("Data size is to large to be encrypted using only the provided public key.\n"
+                  "Try generating larger key or use symmetric session key (omit -n / --no-session-key option).")
+            exit(1)
 
     # Save encrypted data
     try:

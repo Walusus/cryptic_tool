@@ -29,7 +29,7 @@ def main(**args):
         )
         # saving private key
         try:
-            with open("private_key.pem", 'wb') as pem_out:
+            with open(args['private-name'], 'wb') as pem_out:
                 pem_out.write(pem)
         except EnvironmentError:
             print("Error: Unable to create private key file.")
@@ -42,7 +42,7 @@ def main(**args):
             )
             # saving public keys
             try:
-                with open("public_key.pem", 'wb') as pem_out:
+                with open(args['public-name'], 'wb') as pem_out:
                     pem_out.write(pub_pem)
             except EnvironmentError:
                 print("Error: Unable to create public key file.")
@@ -59,7 +59,7 @@ def main(**args):
                 )
                 # saving public key
                 try:
-                    with open("public_key.pem", 'wb') as pem_out:
+                    with open(args['public-name'], 'wb') as pem_out:
                         pem_out.write(pub_pem)
                 except EnvironmentError:
                     print("Error: Unable to create public key file.")
@@ -78,6 +78,10 @@ if __name__ == '__main__':
     )
     parser.add_argument('-k', '--key-path', dest="private-key", type=str, required=False, default="",
                         help="Path to a private key")
+    parser.add_argument('--private-out', dest="private-name", type=str, required=False, default="private_key.pem",
+                        help="Private key output file name (be default private_key.pem).")
+    parser.add_argument('--public-out', dest="public-name", type=str, required=False, default="public_key.pem",
+                        help="Public key output file name (be default public_key.pem).")
     parser.add_argument('-p', '--private-only', dest="private-only", action="store_true", required=False,
                         help="Generate private key only")
     parser.add_argument('-s', '--size', type=int, dest="size", default=2048, required=False,

@@ -60,24 +60,31 @@ def main(**args):
 
     if session_key_length == 0 and session_key_path == 0:   # then we use the private key to decrypt the file
         encrypted_file = file.read()
-        decrypted_file = private_key.decrypt(
-            encrypted_file,
-            padding.OAEP(
-                mgf=padding.MGF1(algorithm=hashes.SHA256()),
-                algorithm=hashes.SHA256(),
-                label=None
+        file.close()
+        try:
+            decrypted_file = private_key.decrypt(
+                encrypted_file,
+                padding.OAEP(
+                    mgf=padding.MGF1(algorithm=hashes.SHA256()),
+                    algorithm=hashes.SHA256(),
+                    label=None
+                )
             )
-        )
+        except ValueError:
+            print("Error: Data length is invalid - wrong key provided")
+            exit(1)
+
     else:
 
         if session_key_length == 0:
             try:
-                encrypted_session_key = open(session_key_path, "rb").read(session_key_length)   # read the encrypted session key from the given file
+                with open(session_key_path, "rb") as sess_key:
+                    encrypted_session_key = sess_key.read()   # read the encrypted session key from the given file
             except EnvironmentError:
-                print("Error: Unable to open the given private key.")
+                print("Error: Unable to open the given session key.")
                 exit(1)
         else:
-            encrypted_session_key = file.read(session_key_length)   # read the encrypted session key from within the file to decrypt
+            encrypted_session_key = file.read(session_key_length)  # read the encrypted session key from within the file to decrypt
 
         # decrypt the session key with the use of private key
         decrypted_session_key = private_key.decrypt(
@@ -104,10 +111,10 @@ def main(**args):
     data_start_idx = 2 + file_name_length
     data_length = int.from_bytes(decrypted_file[data_start_idx:data_start_idx + 8], byteorder="little", signed=False)
 
-    data = bytes(decrypted_file[data_start_idx + 8:data_start_idx + data_length + 8])
+    data = bytes(decrypted_file[data_start_idx + 8:])
 
-    if data_length != data.__sizeof__():
-        print("Error: Data length is invalid - wrong key must've been used")
+    if data_length != len(data):
+        print("Error: Data length is invalid - wrong key provided")
         exit(1)
     else:
         try:
@@ -115,18 +122,21 @@ def main(**args):
                 out.write(data)
         except EnvironmentError:
             print("Error: Unable to create output file")
+        print("Data successfully decrypted to " + output_name)
 
 
 if __name__ == '__main__':
     # Terminal arguments.
     # to run python name.py --integer <integer value>
     # Example:
-    parser = argparse.ArgumentParser(prog='generator', description='Info: \n Generuje klucz prywatny lub parę kluczy (prywatny i publiczny). Domyślnym wyjściem są pliki public.pem i private.pem.')
     parser = argparse.ArgumentParser(prog='Decryptor', description='Info: \n Decrypts the given file')
     parser.add_argument('file-path')
-    parser.add_argument('-k', '--key-path', dest='key-path', type=str, default=0, required=False, help='Path to the private key')
-    parser.add_argument('-s', '--session-key', dest='session-key', type=str, default=0, required=False, help="Path to the session key")
-    parser.add_argument('-o', '--out', type=str, default=0, required=False, help="Name of the output file (if not given, original name is retained")
+    parser.add_argument('-k', '--key-path', dest='key-path', type=str, default=0, required=False,
+                        help='Path to the private key')
+    parser.add_argument('-s', '--session-key', dest='session-key', type=str, default=0, required=False,
+                        help="Path to the session key")
+    parser.add_argument('-o', '--out', type=str, default=0, required=False,
+                        help="Name of the output file (if not given, original name is retained")
 
     parser.set_defaults()
     args = parser.parse_args()
