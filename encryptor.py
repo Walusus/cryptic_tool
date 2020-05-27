@@ -1,5 +1,6 @@
 import sys
 import os
+import argparse
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization, hashes
 from cryptography.hazmat.primitives.asymmetric import padding
@@ -9,7 +10,7 @@ from cryptography.fernet import Fernet
 def print_help():
     print("-h, --help - print this message")
     print("-k, --key-path - path to the public key file")
-    print("-n, --no-session-key - encrypt file using only the public key")
+    print("-n, --no-session-key - encrypt file using only a public key")
     print("-o, --out <filename> - specify the output file")
     print("-d, --detach <filename> - save session key in the specified file")
     pass
@@ -25,45 +26,42 @@ def save_session_key(key, filename):
 
 
 def load_params():
-    # Handle help call
-    if "-h" in sys.argv or "--help" in sys.argv:
-        print_help()
-        exit(0)
+
+    parser = argparse.ArgumentParser(prog='Decryptor', description="Info: Encrypts given file")
+    parser.add_argument('file-path')
+    parser.add_argument('-k', '--key-path', dest='key-path', type=str, default="", required=False,
+                        help='path to a public key file')
+    parser.add_argument('-n', '--no-session-key', dest="no-session", action="store_true", required=False,
+                        help="encrypt file using only a public key")
+    parser.add_argument('-o', '--out', dest='output', type=str, default="", required=False,
+                        help="specify the output file")
+    parser.add_argument('-d', '--detach', dest="session-file", type=str, default="", required=False,
+                        help="save session key in the specified file")
+
+    parser.set_defaults()
+    args = vars(parser.parse_args())
 
     # Get input file name
-    if len(sys.argv) is 1:
-        print("Error: No input file given")
-        exit(1)
-
-    input_file = os.path.basename(sys.argv[-1])
+    input_file = args['file-path']
 
     # Get output file name
-    if "-o" in sys.argv:
-        output_file = sys.argv[sys.argv.index("-o") + 1]
-    elif "--out" in sys.argv:
-        output_file = sys.argv[sys.argv.index("--out") + 1]
+    if args['output'] is not "":
+        output_file = args['output']
     else:
         output_file = os.path.splitext(input_file)[0] + ".crypt"
 
     # Get public key file name
-    if "-k" in sys.argv:
-        pub_key_file = sys.argv[sys.argv.index("-k") + 1]
-    elif "--key-path" in sys.argv:
-        pub_key_file = sys.argv[sys.argv.index("--key-path") + 1]
+    if args['key-path'] is not "":
+        pub_key_file = args['key-path']
     else:
         pub_key_file = input("Public key file path: ")
 
-    # Check if to generate session key
-    if "-n" in sys.argv or "--no-session-key" in sys.argv:
-        no_session_key = True
-    else:
-        no_session_key = False
+    # Check if to generate a session key
+    no_session_key = args['no-session']
 
     # Check how to store session key
-    if not no_session_key and "-d" in sys.argv:
-        session_key_file = sys.argv[sys.argv.index("-d") + 1]
-    elif not no_session_key and "--detach" in sys.argv:
-        session_key_file = sys.argv[sys.argv.index("--detach") + 1]
+    if not no_session_key and args['session-file'] is not "":
+        session_key_file = args['session-file']
     else:
         session_key_file = None
 
