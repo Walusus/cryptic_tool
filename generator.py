@@ -85,7 +85,7 @@ if __name__ == '__main__':
     parser.add_argument('-p', '--private-only', dest="private-only", action="store_true", required=False,
                         help="Generate private key only")
     parser.add_argument('-s', '--size', type=int, dest="size", default=2048, required=False,
-                        help="Size of key to generate in bytes.")
+                        help="Size of key private to generate in bytes.")
 
     parser.set_defaults()
     args = parser.parse_args()

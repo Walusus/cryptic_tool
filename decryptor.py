@@ -131,8 +131,6 @@ if __name__ == '__main__':
     parser.add_argument('file-path')
     parser.add_argument('-k', '--key-path', dest='key-path', type=str, default=0, required=False,
                         help='Path to the private key')
-    parser.add_argument('-p', '--private-only', dest="private-only", action="store_true", required=False,
-                        help="Generate private key only")
     parser.add_argument('-s', '--session-key', dest='session-key', type=str, default=0, required=False,
                         help="Path to the session key")
     parser.add_argument('-o', '--out', type=str, default=0, required=False,
